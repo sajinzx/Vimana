@@ -1,0 +1,5 @@
+-r common.txt
+confluent-kafka==2.6.1
+httpx==0.27.2
+tenacity==9.0.0
+python-metar==1.4.0
