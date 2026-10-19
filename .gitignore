@@ -1,0 +1,17 @@
+data/*
+!data/.gitkeep
+.env
+node_modules/
+__pycache__/
+*.pyc
+mlruns/
+.venv/
+.idea/
+.vscode/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+frontend/dist/
+*.egg-info/
