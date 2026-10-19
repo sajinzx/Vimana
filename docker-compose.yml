@@ -1,0 +1,198 @@
+name: vimana
+
+x-env: &env
+  env_file:
+    - path: .env
+      required: false
+  environment: &env-vars
+    KAFKA_BOOTSTRAP: kafka:9092
+    HBASE_HOST: hbase
+    HBASE_THRIFT_PORT: "9090"
+    DATA_DIR: /data
+
+services:
+  kafka:
+    image: apache/kafka:3.9.0
+    hostname: kafka
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+
+  kafka-init:
+    image: apache/kafka:3.9.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+    volumes:
+      - ./infra/kafka/create-topics.sh:/create-topics.sh:ro
+    entrypoint: ["/bin/bash", "/create-topics.sh"]
+    restart: "no"
+
+  hbase:
+    build: ./infra/hbase
+    image: vimana-hbase
+    hostname: hbase
+    ports:
+      - "16010:16010"
+      - "9090:9090"
+    volumes:
+      - hbase-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/9090'"]
+      interval: 15s
+      timeout: 30s
+      retries: 20
+      start_period: 60s
+
+  hbase-init:
+    build:
+      context: .
+      dockerfile: infra/python/Dockerfile
+    depends_on:
+      hbase:
+        condition: service_healthy
+    <<: *env
+    command: ["python", "scripts/hbase_create_tables.py"]
+    restart: "no"
+
+  bootstrap:
+    build:
+      context: .
+      dockerfile: infra/spark/Dockerfile
+    <<: *env
+    volumes:
+      - ./data:/data
+    command: ["python", "-m", "batch.b00_bootstrap_static"]
+    restart: "no"
+
+  adsb-producer:
+    build:
+      context: .
+      dockerfile: infra/python/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    <<: *env
+    volumes:
+      - ./data:/data
+    command: ["python", "-m", "ingest.adsb_producer"]
+    restart: unless-stopped
+
+  metar-producer:
+    build:
+      context: .
+      dockerfile: infra/python/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    <<: *env
+    command: ["python", "-m", "ingest.metar_producer"]
+    restart: unless-stopped
+
+  spark-streaming:
+    build:
+      context: .
+      dockerfile: infra/spark/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      hbase-init:
+        condition: service_completed_successfully
+      bootstrap:
+        condition: service_completed_successfully
+    <<: *env
+    mem_limit: 3g
+    ports:
+      - "4040:4040"
+    volumes:
+      - ./data:/data
+      - ./mlruns:/mlruns
+    command: ["python", "-m", "streaming.app"]
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: infra/python/Dockerfile
+    depends_on:
+      hbase-init:
+        condition: service_completed_successfully
+      kafka-init:
+        condition: service_completed_successfully
+    <<: *env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+    working_dir: /app/backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  spark-batch:
+    profiles: ["batch"]
+    build:
+      context: .
+      dockerfile: infra/spark/Dockerfile
+    <<: *env
+    volumes:
+      - ./data:/data
+      - ./mlruns:/mlruns
+    entrypoint: ["python", "-m"]
+    command: ["batch.b01_build_gold"]
+
+  mlflow:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: infra/spark/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    command: ["mlflow", "ui", "--backend-store-uri", "file:/mlruns", "--host", "0.0.0.0"]
+
+  kafka-ui:
+    profiles: ["tools"]
+    image: provectuslabs/kafka-ui:v0.7.2
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: vimana
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+volumes:
+  kafka-data:
+  hbase-data:
