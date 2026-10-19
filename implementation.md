@@ -120,7 +120,7 @@ uvicorn[standard]==0.32.0
 happybase==1.2.0
 thriftpy2==0.5.2
 aiokafka==0.12.0
-deltalake==0.21.0       # delta-rs reader for gold tables (no JVM needed)
+deltalake==0.17.4       # delta-rs reader (0.21 needs pyarrow>=16, conflicts with pinned 14) for gold tables (no JVM needed)
 duckdb==1.1.3
 
 # requirements/dev.txt
@@ -872,7 +872,7 @@ App served at **http://localhost:8080**.
 | `kafka` | `apache/kafka:3.9.0` | — | 29092 | KRaft env below, healthcheck `kafka-broker-api-versions.sh` |
 | `kafka-init` | `apache/kafka:3.9.0` | kafka healthy | — | runs `create-topics.sh`, exits 0 |
 | `hbase` | `infra/hbase` | — | 16010 (UI), 9090 (thrift) | `hostname: hbase`, volume `hbase-data`, healthcheck `echo "status" \| hbase shell -n` |
-| `hbase-init` | `infra/python` | hbase healthy | — | `python scripts/hbase_create_tables.py` (+ shell pre-split) |
+| `hbase-init` | `infra/python` | hbase healthy | — | `python scripts/hbase_create_tables.py` (creates the 5 non-pre-split tables; `flight_track` is pre-split by the hbase entrypoint) |
 | `bootstrap` | `infra/spark` | — | — | `b00_bootstrap_static.py`, exits 0 |
 | `adsb-producer` | `infra/python` | kafka-init done | — | `python -m ingest.adsb_producer` |
 | `metar-producer` | `infra/python` | kafka-init done | — | `python -m ingest.metar_producer` |
