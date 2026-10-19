@@ -1,0 +1,40 @@
+# Geo values are seeds; b00_bootstrap_static.py overwrites lat/lon/elevation from OurAirports.
+airports:
+  - icao: VIDP  # Delhi
+    name: Indira Gandhi Intl
+    lat: 28.5665
+    lon: 77.1031
+    elev_ft: 777
+    capacity_per_10min: 12
+  - icao: VABB  # Mumbai
+    name: Chhatrapati Shivaji Maharaj Intl
+    lat: 19.0887
+    lon: 72.8679
+    elev_ft: 39
+    capacity_per_10min: 8
+  - icao: VOBL  # Bengaluru
+    name: Kempegowda Intl
+    lat: 13.1986
+    lon: 77.7066
+    elev_ft: 3000
+    capacity_per_10min: 9
+  - icao: VOMM  # Chennai
+    name: Chennai Intl
+    lat: 12.9941
+    lon: 80.1709
+    elev_ft: 52
+    capacity_per_10min: 6
+  - icao: VOHS  # Hyderabad
+    name: Rajiv Gandhi Intl
+    lat: 17.2313
+    lon: 78.4299
+    elev_ft: 2024
+    capacity_per_10min: 6
+  - icao: VECC  # Kolkata
+    name: Netaji Subhas Chandra Bose Intl
+    lat: 22.6547
+    lon: 88.4467
+    elev_ft: 16
+    capacity_per_10min: 5
+terminal_radius_nm: 40
+outer_radius_nm: 100

@@ -1,0 +1,7 @@
+# Approximate holding fuel flow per aircraft category (kg per minute).
+# These are rough planning figures, not type-specific performance data.
+holding_fuel_kg_per_min:
+  regional: 20
+  narrowbody: 40
+  widebody: 100
+co2_per_kg_fuel: 3.16

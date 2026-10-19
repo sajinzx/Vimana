@@ -1,0 +1,53 @@
+# Thresholds for validation, detectors and windows. All values are read at runtime.
+validation:
+  india_bbox: { lat_min: 0, lat_max: 40, lon_min: 60, lon_max: 100 }
+  alt_ft: { min: -1500, max: 60000 }
+  gs_kt: { min: 0, max: 750 }
+  max_age_s: 600          # ts older than fetched_at by more than this is invalid
+  max_future_s: 30        # ts ahead of fetched_at by more than this is invalid
+  icao24_regex: "^[0-9a-f]{6}$"
+
+detectors:
+  terminal_radius_nm: 40
+  entry_max_alt_ft: 15000       # inbound crossing counts if descending or below FL150
+  phase:
+    approach_max_agl_ft: 12000
+    approach_vr_fpm: -300
+    climb_vr_fpm: 500
+    descent_vr_fpm: -500
+  holding:
+    buffer_minutes: 6
+    min_dist_nm: 5
+    max_dist_nm: 60
+    min_turn_deg: 330
+    max_alt_range_ft: 600
+    max_gs_kt: 280
+    max_radius_nm: 8
+    end_window_minutes: 4
+    end_min_turn_deg: 120
+    end_descent_ft: 1500
+  go_around:
+    armed_agl_ft: 1500
+    armed_dist_nm: 5
+    climb_ft: 800
+    climb_vr_fpm: 500
+    max_dist_nm: 8
+  landing:
+    max_dist_nm: 3
+    agl_ft: 200
+    gs_kt: 80
+  diversion:
+    other_airport_nm: 3
+    leave_alt_ft: 15000
+    leave_dist_nm: 60
+  departure:
+    max_dist_nm: 10
+  state_timeout_minutes: 15
+  buffer_max_points: 200
+
+windows:
+  traffic: { duration: "10 minutes", slide: "1 minute", watermark: "2 minutes" }
+  events: { duration: "15 minutes", slide: "1 minute" }
+  congestion_traffic_factor: 1.5
+  congestion_holds_15m: 3
+  alert_prediction_min: 10
