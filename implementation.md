@@ -437,7 +437,7 @@ Each aircraft emits a state every 5 s of sim time, with Gaussian noise (σ 30 m 
 
 - Live: `GET https://aviationweather.gov/api/data/metar?ids=VIDP,VABB,VOBL,VOMM,VOHS,VECC&format=json` every 10 min. Publish one message per station: `{"station","obs_time","raw","source":"awc","fetched_at"}` keyed by station.
 - Synthetic (`WEATHER_PROVIDER=synthetic`, default when `ADSB_PROVIDER=synthetic`): generate realistic METAR strings every 30 sim-minutes, e.g. `VIDP 190530Z 27006KT 0200 FG VV001 12/11 Q1018 NOSIG` under fog, otherwise `VOMM 190530Z 09010KT 6000 FEW020 30/24 Q1008 NOSIG`.
-- Parsing in `vimana_common/metar_parse.py` with `python-metar`, plus regex fallback. Output fields: `station, obs_ts, wind_dir_deg, wind_kt, gust_kt, visibility_m, ceiling_ft (lowest BKN/OVC/VV), temp_c, dew_c, qnh_hpa, wx_codes (list), fog (bool), low_vis (visibility_m < 1500), flight_category (VFR/MVFR/IFR/LIFR)`. Unparseable → DLQ.
+- Parsing in `vimana_common/metar_parse.py` with a deterministic regex/token decoder (the `python-metar` package is pinned but not used at runtime: two parse paths can disagree on edge cases such as `VV001` and `/////`). Output fields: `station, obs_ts, wind_dir_deg, wind_kt, gust_kt, visibility_m, ceiling_ft (lowest BKN/OVC/VV), temp_c, dew_c, qnh_hpa, wx_codes (list), fog (bool), low_vis (visibility_m < 1500), flight_category (VFR/MVFR/IFR/LIFR)`. Unparseable → DLQ.
 
 ### 6.6 Static reference data (`batch/b00_bootstrap_static.py`)
 
