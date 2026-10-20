@@ -30,6 +30,23 @@ def build_provider(settings: Settings, clock: SimClock, scenario: Scenario) -> P
         from ingest.providers.synthetic import SyntheticProvider
 
         return SyntheticProvider(clock, scenario, seed=settings.sim_seed)
+    if name == "adsblol":
+        from ingest.providers.adsblol import AdsbLolProvider
+
+        return AdsbLolProvider(settings.adsblol_poll_s)
+    if name == "opensky":
+        from ingest.providers.opensky import OpenSkyProvider
+
+        return OpenSkyProvider(
+            settings.opensky_client_id,
+            settings.opensky_client_secret,
+            settings.opensky_daily_credits,
+            settings.opensky_credits_per_call,
+        )
+    if name == "replay":
+        from ingest.providers.replay import ReplayProvider
+
+        return ReplayProvider(settings.replay_dir, settings.replay_speed)
     raise ValueError(f"unsupported ADSB_PROVIDER: {name!r}")
 
 
