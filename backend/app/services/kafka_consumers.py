@@ -49,7 +49,7 @@ async def handle(state: AppState, topic: str, key: str | None, value: dict[str, 
         await state.hub.push({"type": "prediction", "prediction": value})
     elif topic == "pipeline.metrics":
         state.last_progress_ts = time.time()
-        if key == "j1_clean":
+        if key == "j1_dq":
             state.dq = value
         else:
             state.record_progress(value.get("name") or key or "unknown", value)

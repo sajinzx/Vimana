@@ -338,7 +338,7 @@ def _publish_dq(spark: SparkSession, batch: DataFrame, valid: DataFrame, batch_i
     ).first()
     p50, p95 = (q["lat"] or [None, None])[:2]
     payload = {
-        "query": "j1_clean",
+        "query": "j1_dq",
         "batchId": batch_id,
         "ts": now_ms,
         "valid": q["n"],
@@ -347,7 +347,7 @@ def _publish_dq(spark: SparkSession, batch: DataFrame, valid: DataFrame, batch_i
         "latency_ms_p50": p50,
         "latency_ms_p95": p95,
     }
-    row = [("j1_clean", orjson.dumps(payload).decode())]
+    row = [("j1_dq", orjson.dumps(payload).decode())]
     delta_append(
         spark.createDataFrame(
             [
