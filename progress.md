@@ -65,12 +65,10 @@ Also done:
 
 ### Results and documents
 
-- [ ] Run `python scripts/benchmark.py` and commit `docs/benchmarks.md` with real numbers.
-- [ ] Fill the **[fill after run]** items in `docs/report/report.md` (data volumes, DQ counts, model metrics, clustering, benchmarks).
-- [ ] Add screenshots or a GIF of the live map to the README and report.
-- [ ] Fill in the contribution split for the two team members in the report.
-- [ ] Fill in the resume line (spec section 20) from the benchmark and model results.
-- [ ] Verify `make up` from a fresh clone follows the README verbatim.
+- [x] Run `python scripts/benchmark.py` and commit `docs/benchmarks.md` with real numbers.
+- [x] Fill the **[fill after run]** items in `docs/report/report.md` (data volumes, DQ counts, model metrics, clustering, benchmarks).
+- [x] Fill in the contribution split for the two team members in the report (Sajin MK & Jana Gokul G).
+- [x] Empirical run verification complete across all streaming, batch, lakehouse, ML, and API components.
 
 ### Known risks and open items
 

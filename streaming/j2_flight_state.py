@@ -29,7 +29,7 @@ OUTPUT_DDL = (
     "gs_kt double, track_deg double, vr_fpm double, phase string, category string, "
     "holding boolean, last_seen long"
 )
-OUTPUT_COLS = [c.split()[0] for c in OUTPUT_DDL.split(", ")]
+OUTPUT_COLS: list[str] = [c.split()[0] for c in OUTPUT_DDL.split(", ")]
 STATE_DDL = "blob string"
 ALERT_TYPES = {"HOLDING_START", "GO_AROUND", "DIVERSION_SUSPECTED"}
 SEVERITY = {"HOLDING_START": "warning", "GO_AROUND": "critical", "DIVERSION_SUSPECTED": "critical"}
@@ -56,7 +56,7 @@ def _clean(v: Any) -> Any:
 
 
 def _event_row(ev) -> dict[str, Any]:
-    row = dict.fromkeys(OUTPUT_COLS)
+    row: dict[str, Any] = dict.fromkeys(OUTPUT_COLS)
     row.update(
         kind="event",
         event_id=ev.event_id,
@@ -71,7 +71,7 @@ def _event_row(ev) -> dict[str, Any]:
 
 
 def _state_row(st: FlightState, last: dict[str, Any]) -> dict[str, Any]:
-    row = dict.fromkeys(OUTPUT_COLS)
+    row: dict[str, Any] = dict.fromkeys(OUTPUT_COLS)
     row.update(
         kind="state",
         icao24=st.icao24,
