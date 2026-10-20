@@ -134,6 +134,9 @@ services:
     volumes:
       - ./data:/data
       - ./mlruns:/mlruns
+      - ./streaming:/app/streaming:ro
+      - ./vimana_common:/app/vimana_common:ro
+      - ./batch:/app/batch:ro
     command: ["python", "-m", "streaming.app"]
     restart: unless-stopped
 
@@ -151,6 +154,8 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/data
+      - ./backend:/app/backend:ro
+      - ./vimana_common:/app/vimana_common:ro
     working_dir: /app/backend
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     restart: unless-stopped
