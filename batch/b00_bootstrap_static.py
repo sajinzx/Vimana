@@ -11,9 +11,8 @@ from __future__ import annotations
 import csv
 import io
 import json
+import urllib.request
 from pathlib import Path
-
-import httpx
 
 from vimana_common.logging import get_logger
 from vimana_common.settings import airports_config, get_settings
@@ -53,6 +52,11 @@ def parse_reference(airports_csv: str, runways_csv: str, wanted: set[str]) -> di
     return out
 
 
+def fetch(url: str) -> str:
+    with urllib.request.urlopen(url, timeout=20) as resp:
+        return resp.read().decode("utf-8")
+
+
 def main() -> None:
     log = get_logger("bootstrap")
     wanted = {a["icao"].upper() for a in airports_config()["airports"]}
@@ -60,9 +64,8 @@ def main() -> None:
     ref_dir.mkdir(parents=True, exist_ok=True)
     target = ref_dir / "airports.json"
     try:
-        with httpx.Client(timeout=20, follow_redirects=True) as client:
-            airports = client.get(f"{BASE}/airports.csv").text
-            runways = client.get(f"{BASE}/runways.csv").text
+        airports = fetch(f"{BASE}/airports.csv")
+        runways = fetch(f"{BASE}/runways.csv")
         data = parse_reference(airports, runways, wanted)
         target.write_text(json.dumps(data, indent=2), encoding="utf-8")
         log.info("reference data written", airports=sorted(data))
