@@ -15,6 +15,10 @@ extend-exclude = ["frontend", "data"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]  # FastAPI Depends()/Query() defaults
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "vimana_common", "streaming", "ingest", "batch"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -24,4 +28,4 @@ exclude = ["frontend/", "data/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "backend/tests"]
-pythonpath = ["."]
+pythonpath = [".", "backend"]
