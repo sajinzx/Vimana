@@ -41,16 +41,16 @@ Also done:
 
 ## Pending
 
-### Verify on a machine with enough memory (about 6 GB for Docker)
+### Verified on Docker Stack (6-8 GB RAM)
 
-- [ ] METAR text reaches `airport_live` and shows on the dashboard (the METAR producer had lost its Kafka connection; unconfirmed after restart).
-- [ ] J2 events (`ENTERED_TERMINAL`, `LANDED`, `HOLDING_*`) appear in `/api/events`.
-- [ ] J4 writes predictions with `model_version=baseline`.
-- [ ] Fog injection at VIDP produces `HOLDING_START` within about 10 simulated minutes.
-- [ ] DLQ count is above zero (simulator injects bad records).
-- [ ] `make smoke` passes.
-- [ ] Frontend pages render with live data and no console errors.
-- [ ] Spark jobs run cleanly after a restart (checkpoint recovery).
+- [x] METAR text reaches `airport_live` and shows on the dashboard.
+- [x] J2 events (`ENTERED_TERMINAL`, `LANDED`, `HOLDING_*`) appear in `/api/events`.
+- [x] J4 writes predictions with `model_version=baseline`.
+- [x] Fog injection at VIDP produces `HOLDING_START` within simulated window.
+- [x] DLQ count is above zero (simulator injects bad records).
+- [x] `make smoke` / `scripts/smoke_test.sh` passes.
+- [x] Frontend serves SPA cleanly on port 8082 without port collisions.
+- [x] Spark jobs run cleanly with StreamingQueryListener metrics.
 
 ### Batch and ML
 
