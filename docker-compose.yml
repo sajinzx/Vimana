@@ -30,6 +30,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
     volumes:
       - kafka-data:/var/lib/kafka/data
     healthcheck:
@@ -55,13 +56,16 @@ services:
     build: ./infra/hbase
     image: vimana-hbase
     hostname: hbase
+    environment:
+      HBASE_HEAPSIZE: 640m
     ports:
       - "16010:16010"
       - "9090:9090"
     volumes:
       - hbase-data:/data
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/9090'"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:16010/master-status >/dev/null && bash -c 'exec 3<>/dev/tcp/localhost/9090'"]
       interval: 15s
       timeout: 30s
       retries: 20
@@ -124,7 +128,7 @@ services:
       bootstrap:
         condition: service_completed_successfully
     <<: *env
-    mem_limit: 3g
+    mem_limit: 2500m
     ports:
       - "4040:4040"
     volumes:
@@ -156,7 +160,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:80"
     restart: unless-stopped
 
   spark-batch:

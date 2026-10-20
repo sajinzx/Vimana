@@ -20,7 +20,7 @@ def build_spark(app_name: str) -> SparkSession:
         .config("spark.sql.shuffle.partitions", "6")
         .config("spark.sql.session.timeZone", "UTC")
         .config("spark.streaming.stopGracefullyOnShutdown", "true")
-        .config("spark.driver.memory", "2g")
+        .config("spark.driver.memory", "1536m")
         .config("spark.jars.ivy", "/opt/ivy")
         .config(
             "spark.sql.streaming.stateStore.providerClass",

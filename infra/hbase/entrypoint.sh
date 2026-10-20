@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start HBase standalone, pre-split flight_track, then run Thrift1 in the foreground.
+# Start HBase standalone, pre-split flight_track, then run Thrift1 and supervise both.
 set -euo pipefail
 
 HB="$HBASE_HOME/bin/hbase"
@@ -28,4 +28,13 @@ else
   echo "flight_track created with 16 regions"
 fi
 
-exec "$HB" thrift start -p 9090 --infoport 9095
+"$HB" thrift start -p 9090 --infoport 9095 &
+THRIFT_PID=$!
+
+# Exit when either the master or Thrift dies so Docker restarts the container
+# instead of leaving a Thrift server in front of a dead master.
+while kill -0 "$THRIFT_PID" 2>/dev/null && curl -sf -o /dev/null http://localhost:16010/master-status; do
+  sleep 5
+done
+echo "HBase master or Thrift stopped; exiting" >&2
+exit 1
