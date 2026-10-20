@@ -348,6 +348,22 @@ def _publish_dq(spark: SparkSession, batch: DataFrame, valid: DataFrame, batch_i
         "latency_ms_p95": p95,
     }
     row = [("j1_clean", orjson.dumps(payload).decode())]
+    delta_append(
+        spark.createDataFrame(
+            [
+                (
+                    now_ms,
+                    int(q["n"]),
+                    int(sum(reasons.values())),
+                    orjson.dumps(reasons).decode(),
+                )
+            ],
+            "ts long, valid long, invalid long, invalid_by_reason string",
+        ),
+        "silver/dq",
+        "j1_dq",
+        batch_id,
+    )
     write_kafka(spark.createDataFrame(row, "key string, value string"), "pipeline.metrics")
 
 

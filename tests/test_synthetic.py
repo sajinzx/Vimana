@@ -178,9 +178,7 @@ def test_fog_scenario_causes_holds_in_simulation():
         for _ in range(240):  # 20 simulated minutes
             sim.step_to(sim.sim_ms + STEP_MS, emit=False)
             seen |= {
-                a.icao24
-                for a in sim.aircraft.values()
-                if a.mode == "HOLD" and a.airport == "VIDP"
+                a.icao24 for a in sim.aircraft.values() if a.mode == "HOLD" and a.airport == "VIDP"
             }
         return len(seen)
 
