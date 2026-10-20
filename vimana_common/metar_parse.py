@@ -113,11 +113,11 @@ def parse_metar(raw: str, ref_ts_ms: int | None = None) -> dict[str, Any]:
         if vis_m is None and (v := _VIS.match(tok)):
             vis_m = float(v[1])
             continue
-        if (c := _VV.match(tok)):
+        if c := _VV.match(tok):
             if c[1] != "///":
                 ceilings.append(int(c[1]) * 100)
             continue
-        if (c := _CLOUD.match(tok)):
+        if c := _CLOUD.match(tok):
             if c[1] in ("BKN", "OVC") and c[2] != "///":
                 ceilings.append(int(c[2]) * 100)
             continue
@@ -128,10 +128,10 @@ def parse_metar(raw: str, ref_ts_ms: int | None = None) -> dict[str, Any]:
             temp_c = _signed(t[1])
             dew_c = _signed(t[2]) if t[2] else None
             continue
-        if (q := _QNH.match(tok)):
+        if q := _QNH.match(tok):
             qnh = float(q[1])
             continue
-        if (a := _ALTIM.match(tok)):
+        if a := _ALTIM.match(tok):
             qnh = round(float(a[1]) / 100 * INHG_TO_HPA, 1)
             continue
 

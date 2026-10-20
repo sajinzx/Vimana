@@ -31,7 +31,11 @@ def fetch(path: str) -> dict:
 
 def restart(speed: float) -> None:
     env = {**os.environ, "SIM_SPEED": str(speed), "ADSB_PROVIDER": "synthetic"}
-    subprocess.run(["docker", "compose", "up", "-d", "--force-recreate", "adsb-producer", "metar-producer"], check=True, env=env)
+    subprocess.run(
+        ["docker", "compose", "up", "-d", "--force-recreate", "adsb-producer", "metar-producer"],
+        check=True,
+        env=env,
+    )
 
 
 def measure(minutes: float) -> dict:
@@ -55,14 +59,20 @@ def measure(minutes: float) -> dict:
             p95.append(float(data["dq"]["latency_ms_p95"]))
         time.sleep(5)
     return {
-        "median_rps": {q: round(statistics.median(v), 1) if v else None for q, v in samples.items()},
+        "median_rps": {
+            q: round(statistics.median(v), 1) if v else None for q, v in samples.items()
+        },
         "p95_latency_ms": round(max(p95), 0) if p95 else None,
         "max_lag": lag,
     }
 
 
 def render(results: dict[float, dict], minutes: float) -> str:
-    head = "| Speed | " + " | ".join(f"{q} rows/s" for q in QUERIES) + " | p95 latency (ms) | max offsets behind |"
+    head = (
+        "| Speed | "
+        + " | ".join(f"{q} rows/s" for q in QUERIES)
+        + " | p95 latency (ms) | max offsets behind |"
+    )
     sep = "|" + "---|" * (len(QUERIES) + 3)
     lines = [
         "# Benchmarks",
@@ -76,7 +86,11 @@ def render(results: dict[float, dict], minutes: float) -> str:
     ]
     for speed, r in results.items():
         cells = [str(r["median_rps"][q]) for q in QUERIES]
-        lines.append(f"| {speed:g}x | " + " | ".join(cells) + f" | {r['p95_latency_ms']} | {r['max_lag']:g} |")
+        lines.append(
+            f"| {speed:g}x | "
+            + " | ".join(cells)
+            + f" | {r['p95_latency_ms']} | {r['max_lag']:g} |"
+        )
     return "\n".join(lines) + "\n"
 
 
