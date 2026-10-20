@@ -117,7 +117,31 @@ def publish(version: str, src: Path) -> None:
 def main() -> None:
     spark = build_spark("vimana-b04")
     spark.sparkContext.setLogLevel("WARN")
-    df = spark.read.format("delta").load(delta_path("gold/training_set")).cache()
+    df = spark.read.format("delta").load(delta_path("gold/training_set"))
+    defaults = {
+        "ceiling_ft": 5000.0,
+        "vis_m_log": 4.0,
+        "wind_kt": 0.0,
+        "crosswind_kt": 0.0,
+        "fog": 0,
+        "low_vis": 0,
+        "wx_missing": 0,
+        "entry_sector": 0,
+        "hour_sin": 0.0,
+        "hour_cos": 1.0,
+        "is_weekend": 0,
+        "traffic_40nm": 0.0,
+        "low_alt_count": 0.0,
+        "arrivals_15m": 0.0,
+        "holds_15m": 0.0,
+        "traffic_ratio": 0.0,
+        "entry_alt_ft": 0.0,
+        "entry_gs_kt": 0.0,
+    }
+    for col_name, val in defaults.items():
+        if col_name in df.columns:
+            df = df.withColumn(col_name, F.nanvl(F.col(col_name), F.lit(val)))
+    df = df.na.fill(defaults).cache()
     n = df.count()
     if n < MIN_ROWS:
         raise SystemExit(f"only {n} training rows; need at least {MIN_ROWS} (run make seed)")

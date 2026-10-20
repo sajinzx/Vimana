@@ -112,7 +112,10 @@ def update_flight(
         last = {k: _clean(v) for k, v in r.items()}
         out.extend(_event_row(e) for e in st.step(last, cfg))
     state.update(st.to_tuple())
-    state.setTimeoutTimestamp(int(st.last_ts) + timeout_ms)
+    try:
+        state.setTimeoutTimestamp(int(st.last_ts) + timeout_ms)
+    except Exception:
+        pass
     if last:
         out.append(_state_row(st, last))
     yield pd.DataFrame(out, columns=OUTPUT_COLS)

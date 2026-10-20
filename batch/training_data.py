@@ -56,7 +56,10 @@ def _latest_live(metrics: pd.DataFrame) -> pd.DataFrame:
     if metrics.empty:
         return pd.DataFrame(columns=["airport", "window_end", *LIVE_KEYS])
     flat = pd.json_normalize(metrics["metrics_json"].map(json.loads))
+    if "airport" in flat.columns:
+        flat = flat.drop(columns=["airport"])
     df = pd.concat([metrics[["airport", "window_end"]].reset_index(drop=True), flat], axis=1)
+    df = df.loc[:, ~df.columns.duplicated()]
     for k in LIVE_KEYS:
         if k not in df:
             df[k] = None

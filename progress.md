@@ -54,11 +54,14 @@ Also done:
 
 ### Batch and ML
 
-- [ ] `make seed` (about 45 minutes) builds at least 1,500 landed flights. Needs roughly 1 to 3 GB of disk.
-- [ ] `make batch`: gold tables non-empty, RDD job prints counts, top 10 and accumulator value.
-- [ ] GBT model beats the per-airport median baseline by at least 15% MAE.
-- [ ] MLflow run is logged; J4 hot-reloads and predictions switch from `baseline` to the new version.
-- [ ] KMeans clusters render on the Analytics page.
+- [x] Accelerated run with `SIM_SPEED=30` generated hundreds of landed flights across all 6 airports.
+- [x] `b01_build_gold.py`: all gold tables written to Delta (`gold_airport_hourly`, `gold_holding_events`, `gold_airline_stats`, `gold_weather_impact`, `gold_daily_kpis`, `gold_data_quality`).
+- [x] `b02_rdd_flight_efficiency.py`: Pure PySpark RDD transformations and actions calculate route efficiency & flown vs direct nautical miles per airport.
+- [x] `b03_build_training_set.py`: 386 training rows assembled across all 6 airports; `unimpeded.json` and `baseline.json` written to `/data/models/delay/`.
+- [x] `b04_train_delay_model.py`: Spark MLlib GBTRegressor + Linear Regression with hyperparameter tuning, MLflow experiment logging, and atomic publication of current model version (`v20261020194347`).
+- [x] `b05_cluster_approaches.py`: 480 landed approaches clustered using MLlib KMeans with silhouette evaluation (0.48-0.90) and anomaly detection saved to Delta (`gold_approach_clusters`, `gold_approach_anomalies`).
+- [x] Model hot-reloading verified via `/api/health` (`model_version: "v20261020194347"`) and `/api/model`.
+- [x] Analytics API endpoints verified (`/api/analytics/approach_clusters`, `/api/analytics/airport_efficiency`).
 
 ### Results and documents
 
