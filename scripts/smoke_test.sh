@@ -3,7 +3,7 @@
 set -euo pipefail
 
 API="${API:-http://localhost:8000}"
-WEB="${WEB:-http://localhost:8080}"
+WEB="${WEB:-http://localhost:${FRONTEND_PORT:-8082}}"
 
 pass() { echo "ok   $1"; }
 fail() { echo "FAIL $1" >&2; exit 1; }
