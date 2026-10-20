@@ -305,11 +305,11 @@ def build_clean_stream(spark: SparkSession) -> DataFrame:
 _POSITION_NAMES = [n for n, _ in POSITION_COLUMNS]
 
 
-def _write_kafka(df: DataFrame, topic: str) -> None:
+def write_kafka(df: DataFrame, topic: str) -> None:
     df.write.format("kafka").options(**kafka_options()).option("topic", topic).save()
 
 
-def _delta_append(df: DataFrame, rel: str, app_id: str, batch_id: int, partition_by=()) -> None:
+def delta_append(df: DataFrame, rel: str, app_id: str, batch_id: int, partition_by=()) -> None:
     writer = (
         df.write.format("delta")
         .mode("append")
@@ -348,7 +348,7 @@ def _publish_dq(spark: SparkSession, batch: DataFrame, valid: DataFrame, batch_i
         "latency_ms_p95": p95,
     }
     row = [("j1_clean", orjson.dumps(payload).decode())]
-    _write_kafka(spark.createDataFrame(row, "key string, value string"), "pipeline.metrics")
+    write_kafka(spark.createDataFrame(row, "key string, value string"), "pipeline.metrics")
 
 
 def process_batch(batch: DataFrame, batch_id: int) -> None:
@@ -361,7 +361,7 @@ def process_batch(batch: DataFrame, batch_id: int) -> None:
         valid = batch.filter(F.col("invalid_reason").isNull())
         invalid = batch.filter(F.col("invalid_reason").isNotNull())
 
-        _delta_append(
+        delta_append(
             batch.select("raw_value", "kafka_partition", "kafka_offset", "kafka_ts"),
             "bronze/adsb_raw",
             "j1_bronze",
@@ -369,14 +369,14 @@ def process_batch(batch: DataFrame, batch_id: int) -> None:
         )
 
         clean = valid.select(*_POSITION_NAMES)
-        _write_kafka(
+        write_kafka(
             clean.select(
                 F.col("icao24").alias("key"),
                 F.to_json(F.struct(*[F.col(n) for n in _POSITION_NAMES])).alias("value"),
             ),
             "adsb.clean",
         )
-        _delta_append(
+        delta_append(
             clean.withColumn("date", F.to_date((F.col("ts") / 1000).cast("timestamp"))),
             "silver/tracks",
             "j1_silver",
@@ -385,7 +385,7 @@ def process_batch(batch: DataFrame, batch_id: int) -> None:
         )
 
         if not invalid.isEmpty():
-            _write_kafka(
+            write_kafka(
                 invalid.select(
                     F.col("source").alias("key"),
                     F.to_json(
@@ -459,7 +459,7 @@ def metar_stream(spark: SparkSession) -> DataFrame:
 def process_metar_batch(batch: DataFrame, batch_id: int) -> None:
     if batch.isEmpty():
         return
-    _delta_append(batch.drop("obs_time"), "silver/metar", "j1_metar", batch_id)
+    delta_append(batch.drop("obs_time"), "silver/metar", "j1_metar", batch_id)
     batch.foreachPartition(write_metar_partition)
 
 
